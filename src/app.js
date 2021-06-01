@@ -11,7 +11,7 @@ app.get("/popular/:page", (req, res) => {
     let page = req.params.page || 1;
     AnimuGetter.getPopular(page)
         .then((data) => {
-            res.send({ body: data });
+            res.send(data);
         })
         .catch((err) => res.status(404).send("Error occurred: " + err));
 });
@@ -20,7 +20,7 @@ app.get("/recent/:page", (req, res) => {
     let page = req.params.page || 1;
     AnimuGetter.getRecentlyAdded(page)
         .then((data) => {
-            res.send({ body: data });
+            res.send(data);
         })
         .catch((err) => res.status(404).send("Error occurred: " + err));
 });
@@ -28,7 +28,7 @@ app.get("/recent/:page", (req, res) => {
 app.get("/genre/", (req, res) => {
     AnimuGetter.getGenreList()
         .then((data) => {
-            res.send({ body: data });
+            res.send(data);
         })
         .catch((err) => res.status(404).send("Error occurred: " + err));
 });
@@ -37,7 +37,7 @@ app.get("/genre/:type", (req, res) => {
     let genre = req.params.type;
     AnimuGetter.searchByGenre(genre)
         .then((data) => {
-            res.send({ body: data });
+            res.send(data);
         })
         .catch((err) => res.status(404).send("Error occurred: " + err));
 });
@@ -56,7 +56,7 @@ app.get("/anime/:id/:episode", (req, res) => {
     let episode = req.params.episode;
     AnimuGetter.getEpisodeLinks(anime, episode)
         .then((data) => {
-            res.send({ body: data });
+            res.send(data);
         })
         .catch((err) => res.status(404).send("Error occurred: " + err));
 });
@@ -66,7 +66,7 @@ app.get("/", (req, res) => {
     let page = req.query.page || 1;
     AnimuGetter.search(searchField, page)
         .then((data) => {
-            res.send({ body: data });
+            res.send(data);
         })
         .catch((err) => res.status(404).send("Error occurred: " + err));
 });
