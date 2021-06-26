@@ -1,6 +1,5 @@
 const AnimuGetter = require("animu-desu");
 const express = require("express");
-const scapper = require("./scrapper");
 
 const getLinks = require("./links");
 var cors = require("cors");

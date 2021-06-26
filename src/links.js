@@ -52,7 +52,6 @@ exports.getGenreList =
         void 0;
 const cheerio_1 = __importDefault(require("cheerio"));
 const axios_1 = __importDefault(require("axios"));
-// const baseURL = "https://gogoanime.so/";
 
 function getEpisodeLink(id, episode) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -72,7 +71,6 @@ function getEpisodeLink(id, episode) {
                         animeStreamingLinkGogo = $("iframe").attr("src");
                         const downloadsLinkGogo =
                             "https:" + animeStreamingLinkGogo;
-                        console.log(downloadsLinkGogo);
                         finalLinksList.push({
                             link: downloadsLinkGogo,
                             quality: "Play",
