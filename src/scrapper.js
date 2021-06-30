@@ -1,160 +1,426 @@
-const cheerio = require('cheerio');
-const axios = require('axios');
-
-
-
-
-async function newSeason(page) {
-    var anime_list = []
-
-
-    res = await axios.get(`https://gogoanime.so/new-season.html?page=${page}`)
-    const body = await res.data;
-    const $ = cheerio.load(body)
-
-    $('div.main_body div.last_episodes ul.items li').each((index, element) => {
-        $elements = $(element)
-        name = $elements.find('p').find('a')
-        img = $elements.find('div').find('a').find('img').attr('src')
-        link = $elements.find('div').find('a').attr('href')
-        anime_name = { 'name': name.html(), 'img_url': img, 'anime_id': link.slice(10,) }
-        anime_list.push(anime_name)
-
-    })
-
-    return await (anime_list)
+"use strict";
+var __awaiter =
+	(this && this.__awaiter) ||
+	function (thisArg, _arguments, P, generator) {
+		function adopt(value) {
+			return value instanceof P
+				? value
+				: new P(function (resolve) {
+						resolve(value);
+				  });
+		}
+		return new (P || (P = Promise))(function (resolve, reject) {
+			function fulfilled(value) {
+				try {
+					step(generator.next(value));
+				} catch (e) {
+					reject(e);
+				}
+			}
+			function rejected(value) {
+				try {
+					step(generator["throw"](value));
+				} catch (e) {
+					reject(e);
+				}
+			}
+			function step(result) {
+				result.done
+					? resolve(result.value)
+					: adopt(result.value).then(fulfilled, rejected);
+			}
+			step(
+				(generator = generator.apply(thisArg, _arguments || [])).next()
+			);
+		});
+	};
+var __importDefault =
+	(this && this.__importDefault) ||
+	function (mod) {
+		return mod && mod.__esModule ? mod : { default: mod };
+	};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.getGenreList =
+	exports.getRecentlyAdded =
+	exports.searchByGenre =
+	exports.getEpisodeLinks =
+	exports.search =
+	exports.getAnimeDetails =
+	exports.getPopular =
+		void 0;
+const cheerio_1 = __importDefault(require("cheerio"));
+const axios_1 = __importDefault(require("axios"));
+const baseURL = "https://gogoanime.pe/";
+function getPopular(page) {
+	return __awaiter(this, void 0, void 0, function* () {
+		let results = [];
+		const siteUrl = `${baseURL}popular.html?page=${page}`;
+		yield axios_1.default
+			.get(siteUrl)
+			.then((response) =>
+				__awaiter(this, void 0, void 0, function* () {
+					const html = response.data;
+					try {
+						var $ = cheerio_1.default.load(html);
+						$(".img").each((index, element) => {
+							let title = $(element).children("a").attr().title;
+							let id = $(element)
+								.children("a")
+								.attr()
+								.href.slice(10);
+							let image = $(element)
+								.children("a")
+								.children("img")
+								.attr().src;
+							results.push({ id, title, image });
+						});
+					} catch (error) {
+						throw error;
+					}
+				})
+			)
+			.catch((error) => {
+				throw {
+					error: error.message,
+				};
+			});
+		return results;
+	});
 }
-
-
-async function popular(page) {
-    var anime_list = []
-
-
-    res = await axios.get(`https://gogoanime.so/popular.html?page=${page}`)
-    const body = await res.data;
-    const $ = cheerio.load(body)
-
-    $('div.main_body div.last_episodes ul.items li').each((index, element) => {
-        $elements = $(element)
-        name = $elements.find('p').find('a')
-        img = $elements.find('div').find('a').find('img').attr('src')
-        link = $elements.find('div').find('a').attr('href')
-        anime_name = { 'name': name.html(), 'img_url': img, 'anime_id': link.slice(10,) }
-        anime_list.push(anime_name)
-
-    })
-
-    return await (anime_list)
+exports.getPopular = getPopular;
+function getAnimeDetails(id) {
+	return __awaiter(this, void 0, void 0, function* () {
+		const siteUrl = `${baseURL}category/${id}`;
+		let type = "";
+		let summary = "";
+		let released = 0;
+		let status = "";
+		let genres = [];
+		let otherNames = [];
+		let title = "";
+		let image = "";
+		let totalEpisodes = 0;
+		let result = {};
+		yield axios_1.default
+			.get(siteUrl)
+			.then((response) =>
+				__awaiter(this, void 0, void 0, function* () {
+					const html = response.data;
+					try {
+						var $ = cheerio_1.default.load(html);
+						title = $(".anime_info_body_bg").children("h1").text();
+						image = $(".anime_info_body_bg")
+							.children("img")
+							.attr().src;
+						$("p.type").each((index, element) => {
+							if (
+								"Type: " == $(element).children("span").text()
+							) {
+								let tmpType = $(element)
+									.text()
+									.slice(5)
+									.split(" ");
+								tmpType = tmpType.map((el) => el.trim());
+								type = tmpType.filter(Boolean).join(" ");
+							} else if (
+								"Plot Summary: " ==
+								$(element).children("span").text()
+							) {
+								summary = $(element)
+									.text()
+									.slice(13)
+									.trimStart()
+									.trimEnd();
+							} else if (
+								"Status: " == $(element).children("span").text()
+							) {
+								status = $(element)
+									.text()
+									.slice(7)
+									.replace(/\n/g, " ")
+									.trim();
+							} else if (
+								"Genre: " == $(element).children("span").text()
+							) {
+								let genresByComma = $(element)
+									.text()
+									.slice(6)
+									.replace(/\n/g, " ")
+									.replace(/\t/g, " ")
+									.trim();
+								genres = genresByComma.split(",");
+								genres = genres.map((g) => g.trimStart());
+							} else if (
+								"Other name: " ==
+								$(element).children("span").text()
+							) {
+								otherNames = $(element)
+									.text()
+									.slice(11)
+									.trimStart()
+									.split(",");
+							}
+						});
+						totalEpisodes = Number(
+							$("#episode_page")
+								.children("li")
+								.last()
+								.children("a")
+								.attr().ep_end
+						);
+						result = {
+							id,
+							title,
+							image,
+							type,
+							summary,
+							released,
+							genres,
+							status,
+							totalEpisodes,
+							otherNames,
+						};
+					} catch (error) {
+						throw error;
+					}
+				})
+			)
+			.catch((error) => {
+				throw {
+					error: error.message,
+				};
+			});
+		return result;
+	});
 }
-
-async function search(query) {
-    var anime_list = []
-
-
-    res = await axios.get(`https://gogoanime.so//search.html?keyword=${query}`)
-    const body = await res.data;
-    const $ = cheerio.load(body)
-
-    $('div.main_body div.last_episodes ul.items li').each((index, element) => {
-        $elements = $(element)
-        name = $elements.find('p').find('a')
-        img = $elements.find('div').find('a').find('img').attr('src')
-        link = $elements.find('div').find('a').attr('href')
-        anime_name = { 'name': name.html(), 'img_url': img, 'anime_id': link.slice(10,) }
-        anime_list.push(anime_name)
-
-    })
-
-    return await (anime_list)
+exports.getAnimeDetails = getAnimeDetails;
+function search(word, page) {
+	return __awaiter(this, void 0, void 0, function* () {
+		let results = [];
+		const siteUrl = `${baseURL}search.html?keyword=${word}&page=${page}`;
+		yield axios_1.default
+			.get(siteUrl)
+			.then((response) =>
+				__awaiter(this, void 0, void 0, function* () {
+					const html = response.data;
+					try {
+						var $ = cheerio_1.default.load(html);
+						$(".img").each((index, element) => {
+							let title = $(element).children("a").attr().title;
+							let id = $(element)
+								.children("a")
+								.attr()
+								.href.slice(10);
+							let image = $(element)
+								.children("a")
+								.children("img")
+								.attr().src;
+							let released = 0;
+							$(".released").map((idx, el) => {
+								if (idx === index)
+									released = parseInt(
+										$(el)
+											.text()
+											.replace("Released: ", "")
+											.trim()
+									);
+							});
+							results.push({ title, id, image, released });
+						});
+					} catch (error) {
+						throw error;
+					}
+				})
+			)
+			.catch((error) => {
+				throw {
+					error: error.message,
+				};
+			});
+		return results;
+	});
 }
-
-async function anime(_anime_name) {
-
-
-    episode_array = []
-
-    res = await axios.get(`https://gogoanime.so/category/${_anime_name}`)
-    const body = await res.data;
-    const $ = cheerio.load(body)
-
-    img_url = $('div.anime_info_body_bg  img').attr('src')
-    anime_name = $('div.anime_info_body_bg  h1').text()
-    anime_about = $('div.main_body  div:nth-child(2) > div.anime_info_body_bg > p:nth-child(5)').text()
-
-    anime_about = $('div.main_body  div:nth-child(2) > div.anime_info_body_bg > p:nth-child(5)').text()
-
-    //add the new code here
-    el = $('#episode_page')
-
-    ep_start = 1
-
-    ep_end = el.children().last().find('a').attr('ep_end')
-
-
-    for (let i = ep_start; i <= ep_end; i++) {
-        episode_array.push(`${_anime_name}-episode-${i}`)
-
-    }
-
-
-
-    anime_result = { 'name': anime_name, 'img_url': img_url, 'about': anime_about, 'episode_id': episode_array }
-
-    return await (anime_result)
-
-
+exports.search = search;
+function getEpisodeLinks(id, episode) {
+	return __awaiter(this, void 0, void 0, function* () {
+		let animeStreamingLinkGogo;
+		let finalLinksList = [];
+		const siteUrl = `${baseURL}${id}-episode-${episode}`;
+		yield axios_1.default
+			.get(siteUrl)
+			.then((response) =>
+				__awaiter(this, void 0, void 0, function* () {
+					const html = response.data;
+					try {
+						var $ = cheerio_1.default.load(html);
+						if ($(".entry-title").text() === "404") {
+							throw new Error("Episode not found");
+						}
+						animeStreamingLinkGogo = $("li.anime")
+							.children("a")
+							.attr("data-video");
+						const downloadsLinkGogo =
+							"https:" +
+							animeStreamingLinkGogo.replace(
+								"streaming.php",
+								"download"
+							);
+						yield axios_1.default
+							.get(downloadsLinkGogo)
+							.then((downloadsResponse) =>
+								__awaiter(this, void 0, void 0, function* () {
+									const htmlDownloads =
+										downloadsResponse.data;
+									try {
+										var $2 =
+											cheerio_1.default.load(
+												htmlDownloads
+											);
+										$2("a").each((i, e) => {
+											if ($2(e).attr().download === "") {
+												const quality = $2(e)
+													.text()
+													.split("Download")[1]
+													.trim();
+												finalLinksList.push({
+													link: $2(e).attr().href,
+													quality,
+												});
+											}
+										});
+									} catch (error) {
+										throw error;
+									}
+								})
+							)
+							.catch((error) => {
+								throw error;
+							});
+					} catch (error) {
+						throw error;
+					}
+				})
+			)
+			.catch((error) => {
+				throw {
+					error: error.message,
+				};
+			});
+		return finalLinksList;
+	});
 }
-
-async function watchAnime(episode_id) {
-
-    res = await axios.get(`https://gogoanime.so/${episode_id}`)
-    const body = await res.data;
-    $ = cheerio.load(body)
-
-    episode_link = $('li.dowloads > a').attr('href')
-
-    ep = await getDownloadLink(episode_link)
-
-    return await (ep)
-
-
-
+exports.getEpisodeLinks = getEpisodeLinks;
+function searchByGenre(genre, page) {
+	return __awaiter(this, void 0, void 0, function* () {
+		let results = [];
+		const siteUrl = `${baseURL}genre/${genre}?page=${page}`;
+		yield axios_1.default
+			.get(siteUrl)
+			.then((response) =>
+				__awaiter(this, void 0, void 0, function* () {
+					const html = response.data;
+					try {
+						var $ = cheerio_1.default.load(html);
+						$(".img").each((index, element) => {
+							let title = $(element).children("a").attr().title;
+							let id = $(element)
+								.children("a")
+								.attr()
+								.href.slice(10);
+							let image = $(element)
+								.children("a")
+								.children("img")
+								.attr().src;
+							results.push({ title, id, image });
+						});
+					} catch (error) {
+						throw error;
+					}
+				})
+			)
+			.catch((error) => {
+				throw {
+					error: error.message,
+				};
+			});
+		return results;
+	});
 }
-
-async function getDownloadLink(episode_link) {
-
-    ep_array = []
-
-    res = await axios.get(episode_link)
-    const body = await res.data;
-    $ = cheerio.load(body)
-
-    $('div.mirror_link div').each((index, element) => {
-        ep_name = $(element).find('a').html()
-        ep_link = $(element).find('a').attr('href')
-
-        ep_dic = { 'quality': ep_name.replace('Download\n', 'watch').replace(/ +/g, ""), 'ep_link': ep_link }
-
-        ep_array.push(ep_dic)
-    })
-
-
-    return await (ep_array)
-
-
+exports.searchByGenre = searchByGenre;
+function getRecentlyAdded(page) {
+	return __awaiter(this, void 0, void 0, function* () {
+		let results = [];
+		const siteUrl = `${baseURL}?page=${page}`;
+		yield axios_1.default
+			.get(siteUrl)
+			.then((response) =>
+				__awaiter(this, void 0, void 0, function* () {
+					try {
+						const html = response.data;
+						var $ = cheerio_1.default.load(html);
+						$(".img").each((index, element) => {
+							let title = $(element).children("a").attr().title;
+							let id = $(element)
+								.children("a")
+								.attr()
+								.href.slice(1);
+							let image = $(element)
+								.children("a")
+								.children("img")
+								.attr().src;
+							let epNumber = $(element)
+								.parent()
+								.children("p.episode")
+								.text()
+								.replace(" ", "-")
+								.toLowerCase();
+							id = id.replace("-" + epNumber, "");
+							let episodeNumber =
+								Number(epNumber.replace("episode-", "")) || 0;
+							results.push({ id, title, image, episodeNumber });
+						});
+					} catch (error) {
+						throw error;
+					}
+				})
+			)
+			.catch((error) => {
+				throw {
+					error: error.message,
+				};
+			});
+		return results;
+	});
 }
-
-
-
-
-
-
-
-module.exports = {
-    popular,
-    newSeason,
-    search,
-    anime,
-    watchAnime
+exports.getRecentlyAdded = getRecentlyAdded;
+function getGenreList() {
+	return __awaiter(this, void 0, void 0, function* () {
+		let list = [];
+		yield axios_1.default
+			.get(baseURL)
+			.then((response) =>
+				__awaiter(this, void 0, void 0, function* () {
+					try {
+						const html = response.data;
+						var $ = cheerio_1.default.load(html);
+						$("nav.genre")
+							.children("ul")
+							.children("li")
+							.each((index, element) => {
+								list.push($(element).text());
+							});
+					} catch (error) {
+						throw error;
+					}
+				})
+			)
+			.catch((error) => {
+				throw {
+					error: error.message,
+				};
+			});
+		return list;
+	});
 }
-
+exports.getGenreList = getGenreList;
+//# sourceMappingURL=index.js.map

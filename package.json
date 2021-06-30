@@ -1,23 +1,23 @@
 {
-    "name": "gogoanime-api-1",
-    "version": "1.0.0",
-    "description": "",
-    "main": "app.js",
-    "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1",
-        "start": "node src/app.js"
-    },
-    "keywords": [],
-    "author": "",
-    "license": "ISC",
-    "dependencies": {
-        "animu-desu": "^1.0.14",
-        "axios": "^0.21.1",
-        "axios-cloudflare": "^1.0.2",
-        "axios-cookiejar-support": "^1.0.1",
-        "cors": "^2.8.5",
-        "express": "^4.17.1",
-        "js-cookie": "^2.2.1",
-        "querystring": "^0.2.1"
-    }
+	"name": "gogoanime-api-1",
+	"version": "1.0.0",
+	"description": "",
+	"main": "app.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"start": "node src/app.js"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"dependencies": {
+		"axios": "^0.21.1",
+		"axios-cloudflare": "^1.0.2",
+		"axios-cookiejar-support": "^1.0.1",
+		"cors": "^2.8.5",
+		"express": "^4.17.1",
+		"js-cookie": "^2.2.1",
+		"querystring": "^0.2.1",
+		"cheerio": "^1.0.0-rc.5"
+	}
 }
